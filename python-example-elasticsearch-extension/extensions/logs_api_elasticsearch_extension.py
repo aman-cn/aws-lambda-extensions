@@ -44,8 +44,8 @@ class LogsAPIHTTPExtension():
         self.queue = Queue()
         self.logs_api_client = LogsAPIClient()
         self.extensions_api_client = ExtensionsAPIClient()
-        self.es_endpoint = os.environ['ES_ENDPOINT']
-        self.es_index = os.environ['ES_INDEX_PREFIX'] + "-" + datetime.strftime(datetime.now(), "%Y%m%d")
+        self.es_endpoint = os.environ['DF_ES_ENDPOINT']
+        self.es_index = os.environ['DF_ES_INDEX_PREFIX'] + "-" + datetime.strftime(datetime.now(), "%Y.%m.%d")
         self.es_producer = ElasticsearchProducer(self.agent_name, self.es_endpoint, self.es_index)
 
         # Register early so Runtime could start in parallel
