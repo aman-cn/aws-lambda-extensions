@@ -14,16 +14,25 @@ class ElasticsearchProducer():
     def send(self, payload):
         url = f"https://{self.endpoint}/{self.index}/_doc"
         try:
-            if isinstance(payload["record"], str):
+            try:
                 converted = payload
-                converted["record"] = json.loads(payload["record"].replace("'",'"').rstrip())
-            else:
+                if not isinstance(payload["record"], dict):
+                    data = json.loads(payload["record"].replace("'",'"').rstrip())
+                    if not isinstance(data, dict):
+                        converted["record"] = { "data": converted["record"]} 
+                    else:
+                        converted['record'] = {}
+                        for key in data:
+                            converted[key] = data[key]
+            except ValueError as e:
                 converted = payload
-            req = urllib.request.Request(url)
-            req.method = "POST"
-            req.add_header("Content-Type", "application/json")
-            req.data = json.dumps(converted).encode("utf-8")
-            resp = urllib.request.urlopen(req)
+                converted["record"] = { "data": payload["record"]}
+            if "log" in converted:
+                req = urllib.request.Request(url)
+                req.method = "POST"
+                req.add_header("Content-Type", "application/json")
+                req.data = json.dumps(converted).encode("utf-8")
+                resp = urllib.request.urlopen(req)
         except urllib.request.HTTPError as e:
             print(f"[{self.agent_name}] HTTPError: {e}", flush=True)
             sys.exit(1)
